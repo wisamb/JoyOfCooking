@@ -1,0 +1,1027 @@
+---
+title: "Joy of Cooking"
+author: "Wisam Barkho"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+toc: TRUE
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, echo = FALSE, cache = FALSE)
+```
+
+```{r}
+# #install required packages
+# install.packages("ggplot2")
+# install.packages("gridExtra")
+# install.packages("GGally")
+# install.packages("data.table")
+# install.packages("tokenizers")
+# install.packages("plyr")
+```
+
+
+```{r, echo=FALSE}
+#load all packages 
+library(ggplot2)
+library(gridExtra)
+library(GGally)
+library(data.table)
+library(tokenizers)
+library(plyr)
+```
+
+The book *Joy of Cooking* is one of the most popular books in the United States. It has provided recipes for many American-favorite dishes since 1936. Each edition, eight in total, has seen recipes come and go, yet some recipes appear in each of the eight editions with minor changes, if any at all. 
+
+However, controversy brewed when in 2009, Brian Wansink of Cornell University published "The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes". In this publication, the authors conclude that "calorie density and serving sizes in recipes from *The Joy of Cooking* have increased since 1936". In 2018, this paper was retracted when an investigation found that academic misconduct had taken place.$^4$
+
+## Problem Introduction 
+
+This school project was composed of two components. The first part required each student to create data tables for two assigned recipes from the book *Joy of Cooking*, each appearing in 1936 and 2006 (a total of four data files for each student). Each student was then to work on their own to merge each individual recipe into a single data table.
+
+The second part consisted of conducting statistical analysis of the student's choosing. I chose to compare methods of calculating calories and included a subset of the Wansink data to determine if any bias exist. Method 1 calculates calories using the 4-4-9 method which used factors of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)$^2$. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
+
+**Programming Languages/Software:** R, RStudio
+
+**Skills Used:** Text Processing and Parsing, Data Retrieval, Data Wrangling, Data Aggregation
+
+**Github Location:** https://github.com/wisamb/JoyOfCooking
+
+## Part I: Data PreProcessing
+
+Recipes from each student were exported as a tab delimited file with columns *Amount*, *Measure*, and *Ingredient*. *Ingredient* names were to match values from the USDA database (found on the USDA National Agricultural Library website - https://data.nal.usda.gov/search/type/dataset) and an *NDB_No* from the USDA database was included to identify each ingredient. 
+
+### Importing the Data
+
+The first challenge in this dataset is that each student had different naming conventions. Examples of differences encountered are different naming conventions for the required columns (ie, *Unit* rather than *Measure*), not having the minimum columns of *Amount*, *Measure*, and *Ingredient*, having additional columns besides *Amount*, *Measure*, and *Ingredient*, and some files were duplicates. 
+
+A *for-loop* is used to read in the data from all the files. Using the %in% operator, I was able to convert any nonconforming columns to specification. The recipe name and year are parsed from the file name per naming convention. Files that did not have the minimum three columns needed to be dropped. Finally, the recipe name and year are parsed from each file name per naming convention.
+
+```{r}
+#set file paths
+PathToRecipes <- "E:/RecipeTables"
+recipe.files <- list.files(path = PathToRecipes)
+```
+
+```{r, results='hide'}
+k <- length(recipe.files)
+merged.recipes <- data.frame()
+columns.of.interest <- c("Amount","Measure","Ingredient")
+additional.column <- c("NDB_No")
+
+#for-loop to read in the data from all files
+for (i in 1:k) {
+  Year <- {}
+  Recipe <- {}
+
+  #import the current file into a table
+  table.dat <- fread(paste(PathToRecipes,recipe.files[i],sep="/"), 
+                     sep="auto", 
+                     header="auto")
+  
+  #rename all columns with "Unit" header to "Measure"
+  if ("Unit" %in% colnames(table.dat)) {
+    setnames(table.dat, old="Unit", new="Measure")
+  }
+  
+  #rename "Amounts" to "Amount"
+  if ("Amounts" %in% colnames(table.dat)) {
+    setnames(table.dat, old="Amounts", new="Amount")
+  }
+  
+  #rename "Measures" to "Measure"
+  if ("Measures" %in% colnames(table.dat)) {
+    setnames(table.dat, old="Measures", new="Measure")
+  }
+  
+  #rename "Ingredients" to "Ingredient"
+  if ("Ingredients" %in% colnames(table.dat)) {
+    setnames(table.dat, old="Ingredients", new="Ingredient")
+  }
+  
+  #rename "NBD_No" mispelling to "NDB_No"
+  if ("NBD_No" %in% colnames(table.dat)) {
+    setnames(table.dat, old="NBD_No", new="NDB_No")
+  }
+  
+  #some one-off errors
+  if ("pudding_1936" %in% colnames(table.dat)) {
+    setnames(table.dat, old="pudding_1936", new="Ingredient")
+  } else if ("pudding_2006" %in% colnames(table.dat)) {
+    setnames(table.dat, old="pudding_2006", new="Ingredient")
+  } else if ("WRB_1936" %in% colnames(table.dat)) {
+    setnames(table.dat, old="WRB_1936", new="Ingredient")
+  } else if ("WRB_2006" %in% colnames(table.dat)) {
+    setnames(table.dat, old="WRB_2006", new="Ingredient")
+  }
+  
+  #some files do not have the minimum columns
+    #these files are excluded
+  if (!(columns.of.interest %in% colnames(table.dat))) {
+    next
+  }
+  
+  #select the minimum 3 columns and the additional column, if present
+    #dropping any other columns (Recipe, Year, row names)
+  if ("NDB_No" %in% colnames(table.dat)) {
+    table.dat <- subset(table.dat, select=c(columns.of.interest,additional.column))
+  } else {
+    table.dat <- subset(table.dat, select=columns.of.interest)
+  }
+  
+  #parse the Year from the file name
+  y <- as.numeric(gsub("\\D", "", recipe.files[i]))
+
+  #converting file names with extra numbers 
+  if (nchar(y) > 4) {
+    y <- as.numeric(substr(y,start=2,stop=nchar(y)))
+  }
+  
+  #files with 06, 36 notation are duplicates
+    #these files are excluded
+  if (nchar(y) < 4) {
+    next
+  } 
+
+  #create the Year column
+  Year <- cbind(c(Year,rep(y,length(table.dat$Ingredient))))
+
+  #parse the Recipe name from the file name
+  r <- gsub("\\d.*$", "", recipe.files[i])
+
+  #create the Recipe column
+  Recipe <- cbind(c(Recipe,rep(r,length(table.dat$Ingredient))))
+
+  #combine all columns into a single table
+  table.dat <- data.frame(Recipe=Recipe,Year=Year,table.dat)
+  
+  #combine individual tables into one data frame
+    #using NA values for missing NDB_No values (outer join)
+  merged.recipes <- merge(merged.recipes, table.dat, all=TRUE)
+}
+
+length(merged.recipes[,1])
+```
+
+There are 2 versions of Hungarian Goulash so I removed one of them.
+
+```{r}
+merged.recipes <- merged.recipes[merged.recipes$Recipe != "HungarianGoulash.",]
+count <- length(merged.recipes[,1])
+```
+
+A total of `r count` ingredients were retrieved.
+
+### Matching *Ingredient* Entries
+
+In order to calculate calories for each ingredient and recipe, the *NDB_No* value is matched with that in the USDA table. However, many files did not contain *NDB_No* values, so I retrieved these values from the USDA database using a custom function that matches the ingredient to that in the USDA database. Furthermore, the first letter of each entry in the USDA database is capitalized so I ensured each *Ingredient* entry in the merged table is also capitalized using a custom capitalization function. Finally, To continue filling NA values, I used another custom function to tokenize the *Ingredient* column and searched the USDA database for the closest match. 
+
+```{r}
+# Import the FOOD_DES table from the USDA website.
+
+PathToFOOD_DES = "FOOD_DES.txt"
+USDA_FOOD_DES <- read.table(PathToFOOD_DES, 
+                            sep="^", 
+                            quote="~",
+                            header=FALSE, 
+                            stringsAsFactors = FALSE)
+
+names(USDA_FOOD_DES) <- c("NDB_No", "FdGrp_Cd", "Long_Desc", "Shrt_Desc","Com_Name",
+                          "ManufacName", "Survey", "Ref_Desc", "Refuse", "Sci_Name", 
+                          "N_Factor", "Pro_Factor_", "Fat_Factor_", "CHO_Factor")
+```
+
+```{r}
+# a function to find NDB_No
+
+NDB_No.finder <- function(string) {
+  for (i in 1:length(string)) {
+    NDB_No <- USDA_FOOD_DES[string == USDA_FOOD_DES$Long_Desc, "NDB_No"]
+    if (length(NDB_No)!=0){
+      return(NDB_No)
+    } else {          #if new NDB_No is not found
+      NDB_No <- NA    #NDB_No will remain NA 
+      return(NDB_No)
+    }
+  }
+}
+```
+
+```{r}
+# a function to capitalize each ingredient line
+
+capitalize.fn <- function(string) {
+  capitalized <- paste(toupper(substr(string, start=1, stop=1)),
+                       substr(string, start=2, stop=nchar(string)),sep="")
+  return(capitalized)
+}
+```
+
+```{r, results='hide'}
+# a for-loop to update the merged table with NDB-No and capitalize each ingredient line
+
+for (i in 1:length(merged.recipes$NDB_No)) {
+  merged.recipes$Ingredient[i] <- capitalize.fn(merged.recipes$Ingredient[i])
+  if (is.na(merged.recipes$NDB_No[i])) {
+    merged.recipes$NDB_No[i] <- NDB_No.finder(merged.recipes$Ingredient[i])
+  }
+}
+
+length(merged.recipes[,1])
+```
+
+```{r}
+# custom tokenizer function
+
+NDB_No.token.finder <- function(string) {
+  y<-NA
+  narrowed<-data.frame()
+  result<-data.frame()
+  NDB_No<-NA
+  
+  #tokenizes each word and strip punctuation
+  y <- tokenize_words(string, strip_punct = TRUE, simplify = TRUE)  
+  
+  #some special exceptions
+  if (y[1] == 'oysters') {
+    y[1] <- 'oyster'
+  }
+  if (y[1] == 'butted') {
+    y[1] <- 'butter'
+  }
+  if (y[1] == 'beefsteak') {
+    string <- 'Beef steak, bottom round, raw, 1/8 trim'
+    y <- tokenize_words(string, strip_punct = TRUE, simplify = TRUE)
+  }
+  if (y[1] == 'eggyolk') {
+    string <- 'Egg, yolk, raw, fresh'
+    y <- tokenize_words(string, strip_punct = TRUE, simplify = TRUE)
+  }
+  
+  #perserves capitalization of the first word
+  cap.y1<-capitalize.fn(y[1])   
+  
+  #narrows the USDA table by the first word
+    #capitalized and not capitalized
+  narrowed<-USDA_FOOD_DES[USDA_FOOD_DES$Long_Desc %like% y[1] | 
+                          USDA_FOOD_DES$Long_Desc %like% cap.y1, ] 
+  NDB_No <- narrowed$NDB_No[1] 
+  
+  #loops remaining tokenized words to refine search
+  for (j in 2:length(y)) {                            
+    cap.yj<-capitalize.fn(y[j]) 
+    result<-narrowed[narrowed$Long_Desc %like% y[j] |     
+                     narrowed$Long_Desc %like% cap.yj, ]  
+    narrowed<-result
+    #we will make an assumption, if the search returns more than 1 result
+      #we will use the first result in the list
+    x <- narrowed$NDB_No[1]
+    if (!(is.na(x))) {
+      NDB_No <- x
+    }
+  }
+  return(NDB_No)
+}
+```
+
+```{r, results='hide'}
+# a for-loop to update the merged table with tokenizer function
+
+k <- length(merged.recipes$NDB_No)
+for (i in 1:k) {
+  if (is.na(merged.recipes$NDB_No[i])) {
+    merged.recipes$NDB_No[i] <- NDB_No.token.finder(merged.recipes$Ingredient[i])
+  }
+}
+
+length(merged.recipes[,1])
+```
+
+Using a *for-loop*, I check remaining NA values in the *NDB_No* column. 
+
+```{r}
+# check remaining `NA` values in the NDB_No column
+
+j<-0
+for (i in 1:length(merged.recipes$NDB_No)) {
+  if (is.na(merged.recipes$NDB_No[i])) {
+    print(lapply(c(i,merged.recipes$Ingredient[i]),trimws))
+    j<-j+1
+  }
+}
+
+#j
+```
+
+There are three results in five occurrences in the Ingredients column that do not have equivalents in the USDA database table. These ingredients are removed but not the recipe.
+
+```{r}
+merged.recipes.2 <- merged.recipes[!(is.na(merged.recipes$NDB_No)),]
+count <- length(merged.recipes.2[,1])
+```
+
+A new total of `r count` ingredients were retrieved.
+
+Later on, if too many ingredients have been dropped for a particular recipe (>40%), then the recipe *for both years* will be dropped. Therefore, I count the number of ingredients in each recipe now. 
+```{r}
+#aggregate the merge table
+agg.merged.recipes <- aggregate(cbind(count = Amount) ~ Recipe+Year, 
+                                data=merged.recipes, 
+                                FUN = function(x){NROW(x)})
+#sort by recipe name
+agg.merged.recipes <- agg.merged.recipes[order(agg.merged.recipes$Recipe),]
+write.csv(agg.merged.recipes, "Merged_Recipes_Count.csv", row.names=FALSE)
+
+recipe.count <- length(agg.merged.recipes[,1])
+```
+
+There is a total of `r recipe.count` recipes.
+
+### Matching *Measure* Entries
+
+In order to find the correct values for the calories calculation, the entries in the *Measure* column will also need to match the USDA database. A custom function was used to standardize and correct various *Measure* entries, such as "tbs" or "Tbsp" to "tbsp".
+
+```{r}
+# Import the `WEIGHT` table from the USDA database.
+
+PathToWEIGHT = "WEIGHT.txt"
+USDA_WEIGHT <- read.table(PathToWEIGHT, 
+                          sep="^", 
+                          quote="~",
+                          header=FALSE, 
+                          stringsAsFactors = FALSE)
+
+names(USDA_WEIGHT) <- c("NDB_No", "Seq", "Amount", "Msre_Desc",
+                        "Gm_Wgt", "Num_Data_pts", "Std_Dev")
+```
+
+```{r}
+# a function to standardize and correct various Measure entries
+
+correct.measures <- function(string) {
+  if (string == 'lrg') {
+    string <- 'large'
+  }
+  
+  if (string == 'ea') {
+    string <- 'each'
+  }
+  
+  if (string == 'tbs' | 
+      string == 'Tbs' | 
+      string == 'Tbsp') {
+    string <- 'tbsp'
+  }
+  
+  if (string == 'thick slc') {
+    string <- 'slice'
+  }
+  
+  if (string == 'cups') {
+    string <- 'cup'
+  }
+  
+  if (string == 'envelope (1 tbsp)') {
+    string <- 'tbsp'
+  }
+  
+  if (string == 'whole') {
+    string <- 'medium'
+  }
+  
+  y <- tokenize_words(string, strip_punct = TRUE, simplify = TRUE)
+  for (i in 1:length(y)) {
+    if (y[i] == 'cup') {
+      string <- 'cup'
+    }
+    if (y[i] == 'medium') {
+      string <- 'medium'
+    }
+    if (y[i] == 'large') {
+      string <- 'large'
+    }
+    #no ingredients are measured as each or pieces so
+      #make the assumption that the unit is medium
+    if (y[i] == 'each' | y[i] == 'pieces') {
+      string <- 'medium'
+    }
+  }
+  
+  return(string)
+}
+```
+
+```{r, results='hide'}
+# Update table with these corrections
+
+for (j in 1:length(merged.recipes.2$Measure)) {
+    merged.recipes.2$Measure[j] <- correct.measures(merged.recipes.2$Measure[j])
+}
+
+length(merged.recipes.2[,1])
+```
+
+### Data Retrieval for Calorie Count
+
+I then searched the USDA table for *Measure* entries to return the matching *Gm_Wgt* value, which is used for the calorie conversion. The *Amount* column is multiplied by the *Gm_Wgt* column to get *Grams* for each ingredient entry. 
+
+```{r, results='hide'}
+Gm_Wgt <- {}
+Amt_Wgt <- {}
+Grams <- {}
+
+for (i in 1:length(merged.recipes.2$NDB_No)) {
+  #returns Gm_Wgt value
+  grams.weight <- USDA_WEIGHT[(merged.recipes.2$NDB_No[i] == USDA_WEIGHT$NDB_No &
+                               USDA_WEIGHT$Msre_Desc %like% merged.recipes.2$Measure[i]),
+                               "Gm_Wgt"]
+  #some values of Gm_Wgt in the USDA table are by amounts >1 (ie, every 4oz)
+    #returns Amount value
+  amount.weight <- USDA_WEIGHT[(merged.recipes.2$NDB_No[i] == USDA_WEIGHT$NDB_No &
+                               USDA_WEIGHT$Msre_Desc %like% merged.recipes.2$Measure[i]),
+                               "Amount"]
+  #we will make an assumption, if the search returns more than 1 result, 
+    #we will use the first result in the list
+  Gm_Wgt <- c(Gm_Wgt, grams.weight[1])
+  Amt_Wgt <- c(Amt_Wgt,amount.weight[1])
+}
+
+#for-loop to account for Amount conversion
+for (j in 1:length(Gm_Wgt)) {
+  grm <- (Gm_Wgt[j] / Amt_Wgt[j]) * merged.recipes.2$Amount[j]
+  Grams <- c(Grams, grm)
+}
+
+# these columns are added to the merged recipes table
+merged.recipes.3 <- cbind(merged.recipes.2,Gm_Wgt,Grams)
+length(merged.recipes.3[,1])
+```
+
+```{r, results='hide'}
+# Calculate remaining number of `NA` values
+
+j<-0
+for (i in 1:length(merged.recipes.3$Measure)) {
+  if (is.na(merged.recipes.3$Gm_Wgt[i])) {
+    j<-j+1
+  }
+}
+
+j
+```
+
+There are `r j` remaining NA values. Although this will reduce the data by 28%, I removed these entries due to time constraints.
+
+```{r, results='hide'}
+merged.recipes.3 <- merged.recipes.3[!(is.na(merged.recipes.3$Gm_Wgt)),]
+count <- length(merged.recipes.3[,1])
+count
+```
+
+A total of `r count` ingredients remain.
+
+```{r}
+#export to save progress
+write.csv(merged.recipes.3, "Merged_Recipes.csv")
+```
+
+### Data Retrieval for 4-4-9 Method
+
+In order to calculate the total calories of each ingredient, the *Grams* column was multiplied by the nutrient content (a percent) to get grams of carbohydrate, protein, and fat. These weights were multiplied by the 4-4-9 factor to convert to calories. All three are added to determine total calories of each ingredient, and all ingredient calories are added to determine calories of each recipe.
+
+```{r, results='hide'}
+#import progess
+
+PathToRecipes <- "Merged_Recipes.csv"
+merged_recipes <- read.csv(PathToRecipes, header = TRUE)
+length(merged_recipes[,1])
+```
+
+```{r}
+# The USDA database provides the nutrient number (205, 203, and 204 for carbohydrate, protein, and fat, respectively)
+
+nutr_no.CHO <- 205
+nutr_no.PRO <- 203
+nutr_no.FAT <- 204
+```
+
+```{r}
+#Import the NUT_DATA table from the USDA website
+
+#if-else statement allows to save file for faster load times
+
+if(!file.exists("Nut_Dat.Rda")) {
+  PathToNUT_DATA = "NUT_DATA.txt"
+  USDA_NUT_DATA <- read.table(PathToNUT_DATA, 
+                              sep="^", 
+                              quote="~",
+                              header=FALSE, 
+                              stringsAsFactors = FALSE)
+  
+  names(USDA_NUT_DATA) <- c("NDB_No", "Nutr_No", "Nutr_Val", "Num_Data_Pts","Std_Error",
+                            "Src_Cd", "Deriv_Cd", "Ref_NDB_No", "Add_Nutr_Mark", 
+                            "Num_Studies", "Min", "Max", "DF", "Low_EB", "Up_EB", 
+                            "Stat_Cmt", "AddMod_Date")
+  
+  USDA_NUT_DATA <- USDA_NUT_DATA[order(USDA_NUT_DATA$NDB_No, USDA_NUT_DATA$Nutr_No),]
+} else {
+  load(file="Nut_Dat.Rda")
+}
+```
+
+```{r}
+# Look up the `Nutr_Val` of carbohydrate, protein, and fat for each ingredient
+
+k <- length(merged_recipes$NDB_No)
+
+#if-else statement allows to save file for faster load times
+if(!file.exists("nutval.Rda")) {
+  NutrVal.CHO <- {}
+  NutrVal.PRO <- {}
+  NutrVal.FAT <- {}
+  
+  for (i in 1:k) {
+    #nutrient values for carbohydrates
+    nvCHO <- USDA_NUT_DATA[merged_recipes$NDB_No[i] == USDA_NUT_DATA$NDB_No &
+                           nutr_no.CHO == USDA_NUT_DATA$Nutr_No, "Nutr_Val"]
+    NutrVal.CHO <- c(NutrVal.CHO, nvCHO)
+    
+    #nutrient values for protein
+    nvPRO <- USDA_NUT_DATA[merged_recipes$NDB_No[i] == USDA_NUT_DATA$NDB_No &
+                           nutr_no.PRO == USDA_NUT_DATA$Nutr_No, "Nutr_Val"]
+    NutrVal.PRO <- c(NutrVal.PRO, nvPRO)
+    
+    #nutrient values for fat
+    nvFAT <- USDA_NUT_DATA[merged_recipes$NDB_No[i] == USDA_NUT_DATA$NDB_No &
+                           nutr_no.FAT == USDA_NUT_DATA$Nutr_No, "Nutr_Val"]
+    NutrVal.FAT <- c(NutrVal.FAT, nvFAT)
+  }
+}else {
+  load(file="nutval.Rda")
+}
+```
+
+```{r, results='hide'}
+# Calculate carbohydrate, protein, fat, and total calories per recipe and add to `merged_recipes` table
+
+CHO <- 4
+PRO <- 4
+FAT <- 9
+cal.CHO <- {}
+cal.PRO <- {}
+cal.FAT <- {}
+cal.total <- {}
+  
+for (i in 1:k) {
+  grams <- merged_recipes$Grams[i]
+  
+  #calculate calories for each
+  cCHO <- grams * NutrVal.CHO[i]/100 * CHO
+  cPRO <- grams * NutrVal.PRO[i]/100 * PRO
+  cFAT <- grams * NutrVal.FAT[i]/100 * FAT
+  
+  #create vectors for calorie values
+  cal.CHO <- c(cal.CHO, cCHO)
+  cal.PRO <- c(cal.PRO, cPRO)
+  cal.FAT <- c(cal.FAT, cFAT)
+  
+  #calculate total calories
+  ctotal <- sum(cCHO, cPRO, cFAT)
+  cal.total <- c(cal.total, ctotal)
+}
+  
+#create table
+ingredients.449 <- cbind(merged_recipes,cal.CHO,cal.PRO,cal.FAT,cal.total)
+  
+length(ingredients.449[,1])
+```
+
+```{r, results='hide'}
+#Compute total calories for each recipe
+
+#aggregate data
+recipes.449 <- aggregate(. ~Recipe+Year, data=ingredients.449, FUN=sum)
+#interested in only 3 columns
+recipes.449 <- recipes.449[,c("Recipe","Year","cal.total")] 
+#sort by Recipe name
+recipes.449 <- recipes.449[order(recipes.449$Recipe),]
+length(recipes.449[,1])
+```
+
+### Data Retrieval for Atwater Factor
+
+This method is essentially the same as Method 1 except Atwater factors were used rather than 4-4-9. The Atwater factors were obtained from the USDA database. 
+
+```{r, results='hide'}
+# Import the FOOD_DES table from the USDA website
+
+PathToFOOD_DES = "FOOD_DES.txt"
+USDA_FOOD_DES <- read.table(PathToFOOD_DES, 
+                            sep="^", 
+                            quote="~",
+                            header=FALSE, 
+                            stringsAsFactors = FALSE)
+
+names(USDA_FOOD_DES) <- c("NDB_No", "FdGrp_Cd", "Long_Desc", "Shrt_Desc","Com_Name",
+                          "ManufacName", "Survey", "Ref_Desc", "Refuse", "Sci_Name", 
+                          "N_Factor", "Pro_Factor_", "Fat_Factor_", "CHO_Factor")
+USDA_FOOD_DES
+```
+
+```{r}
+# Search for the Atwater factors for each ingredient
+# Add columns to `merged_recipes` table. 
+
+factor.CHO <- {}
+factor.PRO <- {}
+factor.FAT <- {}
+
+for (i in 1:k) {
+  #Atware factor for carbohydrates
+  fCHO <- USDA_FOOD_DES[merged_recipes$NDB_No[i] == USDA_FOOD_DES$NDB_No, "CHO_Factor"]
+  factor.CHO <- c(factor.CHO, fCHO)
+  
+  #Atware factor for protein
+  fPRO <- USDA_FOOD_DES[merged_recipes$NDB_No[i] == USDA_FOOD_DES$NDB_No, "Pro_Factor_"]
+  factor.PRO <- c(factor.PRO, fPRO)
+  
+  #Atware factor for fat
+  fFAT <- USDA_FOOD_DES[merged_recipes$NDB_No[i] == USDA_FOOD_DES$NDB_No, "Fat_Factor_"]
+  factor.FAT <- c(factor.FAT, fFAT)
+}
+```
+
+```{r, results='hide'}
+# Calculate carbohydrate, protein, fat, and total calories per recipe 
+# Add to merged_recipes table
+
+cal.CHO <- {}
+cal.PRO <- {}
+cal.FAT <- {}
+cal.total <- {}
+  
+for (i in 1:k) {
+  grams <- merged_recipes$Grams[i]
+  CHO <- factor.CHO[i]
+  PRO <- factor.PRO[i]
+  FAT <- factor.FAT[i]
+  
+  #calculate calories for each
+  cCHO <- grams * NutrVal.CHO[i]/100 * CHO
+  cPRO <- grams * NutrVal.PRO[i]/100 * PRO
+  cFAT <- grams * NutrVal.FAT[i]/100 * FAT
+  
+  #create vectors for calorie values
+  cal.CHO <- c(cal.CHO, cCHO)
+  cal.PRO <- c(cal.PRO, cPRO)
+  cal.FAT <- c(cal.FAT, cFAT)
+  
+  #calculate total calories
+  ctotal <- sum(cCHO, cPRO, cFAT)
+  cal.total <- c(cal.total, ctotal)
+}
+  
+#create table
+ingredients.Atwater <- cbind(merged_recipes,cal.CHO,cal.PRO,cal.FAT,cal.total)
+  
+length(ingredients.Atwater[,1])
+```
+
+Atwater factor is not provided for many ingredients and NA values must be removed to continue with analysis, resulting in another 209 ingredients being dropped.
+
+```{r, results='hide'}
+ingredients.Atwater <- ingredients.Atwater[!(is.na(ingredients.Atwater$cal.total)),]
+count <- length(ingredients.Atwater[,1])
+```
+
+A total of `r count` ingredients remain.
+
+```{r, results='hide'}
+# Compute total calories of each recipe
+
+#aggregate data
+recipes.Atwater <- aggregate(. ~Recipe+Year, data=ingredients.Atwater, FUN=sum)
+#interested in only 3 columns
+recipes.Atwater <- recipes.Atwater[,c("Recipe","Year","cal.total")] 
+#sort by Recipe name
+recipes.Atwater <- recipes.Atwater[order(recipes.Atwater$Recipe),]
+length(recipes.Atwater[,1])
+```
+
+Then, I removed any recipe that has lost more than 40% of its ingredients. If a recipe is dropped, it will be dropped for both years.
+
+```{r, results='hide'}
+# Count the remaining ingredients per recipe from the 4-4-9 method
+
+#4-4-9 table
+count.449 <- aggregate(cbind(count = Amount) ~ Recipe+Year, 
+                                data=ingredients.449, 
+                                FUN = function(x){NROW(x)})
+count.449 <- count.449[order(count.449$Recipe),]  #order by Recipe
+length(count.449[,1])
+
+#Atwater table
+count.Atwater <- aggregate(cbind(count = Amount) ~ Recipe+Year, 
+                                data=ingredients.Atwater, 
+                                FUN = function(x){NROW(x)})
+count.Atwater <- count.Atwater[order(count.Atwater$Recipe),]  #order by Recipe
+length(count.Atwater[,1])
+```
+
+```{r, results='hide'}
+# Import the table with all ingredient counts
+
+PathToRecipeCount = "Merged_Recipes_Count.csv"
+recipes.count <- read.table(PathToRecipeCount, sep=',', header=TRUE)
+length(recipes.count[,1])
+```
+
+```{r, results='hide'}
+# Merge these 3 tables 
+# Calculate percent of remaining ingredients per recipe
+
+#merge all 3 by Recipe and Year
+count.merged <- merge(recipes.count, count.449, by=c("Recipe","Year"), all=TRUE, 
+                      suffixes = c(".all",".449"))
+count.merged <- merge(count.merged, count.Atwater, by=c("Recipe","Year"), all=TRUE)
+
+#rename columns
+colnames(count.merged) <- c("Recipe","Year","count.all","count.449","count.Atwater")
+
+percent.449 <- {}
+percent.Atwater <- {}
+k <- length(count.merged$Recipe)
+
+#for-loop to calculate percents
+for (i in 1:k) {
+  p449 <- count.merged$count.449[i] / count.merged$count.all[i] * 100
+  pAtwater <- count.merged$count.Atwater[i] / count.merged$count.all[i] * 100
+  percent.449 <- c(percent.449, p449)
+  percent.Atwater <- c(percent.Atwater, pAtwater)
+}
+count.merged <- cbind(count.merged,percent.449,percent.Atwater)
+length(count.merged[,1])
+```
+
+```{r, results='hide'}
+# Exclude any recipe that has dropped more than 40% of its ingredients
+
+criteria <- 40  #40%
+exclude <- {}
+
+#create vector of recipes to exclude
+for (j in 1:k) {
+  if (count.merged$percent.449[j]<criteria | count.merged$percent.Atwater[j]<criteria) {
+    exclude <- c(exclude, as.character(count.merged$Recipe[j]))
+  }
+}
+
+#drop these values for all 4 tables
+  #these will be the final tables for our analysis
+
+#4-4-9 ingredient table
+ingredients.449 <- ingredients.449[!(ingredients.449$Recipe %in% exclude),]
+length(ingredients.449[,1])
+
+#4-4-9 recipe table
+recipes.449 <- recipes.449[!(recipes.449$Recipe %in% exclude),]
+length(recipes.449[,1])
+
+#Atwater ingredient table
+ingredients.Atwater <- ingredients.Atwater[!(ingredients.Atwater$Recipe %in% exclude),]
+length(ingredients.Atwater[,1])
+
+#Atwater recipe table
+recipes.Atwater <- recipes.Atwater[!(recipes.Atwater$Recipe %in% exclude),]
+recipe.count <- length(recipes.Atwater[,1])
+recipe.count
+```
+
+A total of `r recipe.count` recipes remain.
+
+\newpage
+
+## Part II: Statistical Analysis
+
+### Method Comparison
+
+I start by looking at the summary statistics for all four conditions by year.
+
+```{r}
+#split by year
+ing1936.449 <- ingredients.449[ingredients.449$Year == 1936,]
+ing2006.449 <- ingredients.449[ingredients.449$Year == 2006,]
+
+ing1936.Atwater <- ingredients.Atwater[ingredients.Atwater$Year == 1936,]
+ing2006.Atwater <- ingredients.Atwater[ingredients.Atwater$Year == 2006,]
+
+recipes1936.449 <- recipes.449[recipes.449$Year == 1936,]
+recipes2006.449 <- recipes.449[recipes.449$Year == 2006,]
+
+recipes1936.Atwater <- recipes.Atwater[recipes.Atwater$Year == 1936,]
+recipes2006.Atwater <- recipes.Atwater[recipes.Atwater$Year == 2006,]
+
+#4-4-9 ingredient table 1936
+summary(ing1936.449$cal.total)
+
+#Atwater ingredient table 1936
+summary(ing1936.Atwater$cal.total)
+
+#4-4-9 recipe table 1936
+summary(recipes1936.449$cal.total)
+
+#Atwater recipe table 1936
+summary(recipes1936.Atwater$cal.total)
+
+#4-4-9 ingredient table 2006
+summary(ing2006.449$cal.total)
+
+#Atwater ingredient table 2006
+summary(ing2006.Atwater$cal.total)
+
+#4-4-9 recipe table 2006
+summary(recipes2006.449$cal.total)
+
+#Atwater recipe table 2006
+summary(recipes2006.Atwater$cal.total)
+```
+
+*Mean and quantile values between the ingredient tables (for both years) are fairly close to one another (5-10% difference).*  
+  
+*Mean and quantile values between the recipe tables differ (for both years) 15-30% with 4-4-9 values being consistently higher.*  
+  
+A scatterplot confirms this second finding and shows that the 4-4-9 method scores many recipes with higher calorie content than the Atwater
+method. Interestingly, a majority of the recipes that display the increase are from 2006.
+
+```{r}
+#merge the 2 tables by Recipe and Year
+method.merge<-merge(recipes.Atwater, recipes.449, by=c("Recipe","Year"))
+
+#rename columns
+colnames(method.merge) <- c("Recipe", "Year", "totalcal.Atwater","totalcal.449")
+
+#create a column to assign color to data points
+method.merge$Color <- "blue"
+method.merge$Color[method.merge$Year==2006] <- "orange"
+
+#scatterplot
+plot(method.merge$totalcal.Atwater, method.merge$totalcal.449, col=method.merge$Color, 
+     main="4-4-9 vs Atwater Method for Recipes", xlab="Atwater Method", ylab="4-4-9 Method",bty="n",pch=16)
+abline(0,1)
+#abline(lm(method.merge$totalcal.449~method.merge$totalcal.Atwater,data=method.merge))
+legend("bottomright", legend=c("1936", "2006"), col=c("blue", "orange"), box.lty=0, pch=16)
+```
+
+### Wansink Data
+
+```{r, results='hide'}
+# Import the Joy of Cooking data
+
+PathToJoC <- "JoyOfCooking.csv"
+JoyOfCooking <- read.csv(PathToJoC, header = TRUE)
+JoyOfCooking <- JoyOfCooking[order(JoyOfCooking$RecipeName),]
+length(JoyOfCooking[,1])
+```
+
+```{r}
+#Subset for the Wansink data
+
+Wansink.dat <- JoyOfCooking[JoyOfCooking$TooMuch == TRUE,]
+
+#exclude recipes that have NA values for Calories per Serving
+Wansink.dat <- Wansink.dat[!is.na(Wansink.dat$CaloriesperServing1936),]
+
+wansink.count <- length(Wansink.dat[,1])
+```
+
+I subset the Wansink data to determine if the Wansink Data uses the 4-4-9 method or the Atwater method. I find that the data contains `r wansink.count` recipes although Wansink evaluated 18 recipes. Nevertheless, 18 recipes is a small sample from the 142 total recipes from *Joy of Cooking*. This small sample size introduces a bias and is a prevalent criticism of Wansink's work.
+
+```{r, results='hide'}
+# remove non-alphabetic characters and spaces from our data table
+
+#our data
+method.merge$Recipe <- gsub("[^[:alnum:]]", "", method.merge$Recipe)
+method.merge$Recipe <- gsub(" ", "", method.merge$Recipe)
+length(method.merge[,1])
+
+#Wansink's data
+Wansink.dat$RecipeName <- gsub(" ", "", Wansink.dat$RecipeName)
+length(Wansink.dat[,1])
+```
+
+```{r, results='hide'}
+# Subset the merged recipes table based on the Wansink data
+
+method.subset <- method.merge[method.merge$Recipe %in% Wansink.dat$RecipeName,]
+colnames(method.subset)[1] <- "RecipeName"
+method.subset[1:4]
+```
+
+```{r}
+df <- ddply(method.subset,~RecipeName,summarise,number_of_distinct_orders=length(unique(RecipeName)))
+recipe.count <- length(df[,1])
+```
+
+There are `r recipe.count` remaining recipes that were matched between the two datasets. This is most likely due to the `NA` values for the Atwater factors. This is a small sample size and I may need to go back to collect more data.
+
+```{r, results='hide'}
+#convert our subsetted merged recipes table in terms of Calories per Serving by year
+
+#Minimum and maximum serving values are equal for all 6 recipes, both years
+ServingsPerRecipe <- c(12,8,8,8,36,16,6,6,6,6,24,24)
+
+#add columns to the subsetted data
+method.subset <- cbind(method.subset, ServingsPerRecipe)
+
+CaloriesPerServing.Atwater <- {}
+CaloriesPerServing.449 <- {}
+#calculate Calories per Serving
+for (i in 1:length(method.subset$RecipeName)) {
+  cpsAtw <- method.subset$totalcal.Atwater[i]/ServingsPerRecipe[i]
+  cps449 <- method.subset$totalcal.449[i]/ServingsPerRecipe[i]
+  CaloriesPerServing.Atwater <- c(CaloriesPerServing.Atwater, cpsAtw)
+  CaloriesPerServing.449 <- c(CaloriesPerServing.449, cps449)
+}
+
+subset.2 <- cbind(method.subset, CaloriesPerServing.Atwater, CaloriesPerServing.449)
+
+#keep only columns of interest
+subset.2 <- subset.2[,c("RecipeName", "Year", "CaloriesPerServing.449", "CaloriesPerServing.Atwater")]
+length(subset.2[,1])
+```
+
+```{r, results='hide'}
+# Reshape Wansink data to long format and subset
+Wansink.long <- Wansink.dat[,c("RecipeName","CaloriesperServing1936", "CaloriesperServing2006")]
+Wansink.long <- reshape(Wansink.long, varying=2:3, direction="long", timevar = "Year", sep="")
+Wansink.long <- Wansink.long[,-c(4)]  #remove id column
+Wansink.long <- Wansink.long[order(Wansink.long$RecipeName),]  #sort by Recipe name
+Wansink.long <- Wansink.long[Wansink.long$RecipeName %in% subset.2$RecipeName,]  #subset with our data
+length(Wansink.long[,1])
+```
+
+```{r, results='hide'}
+#  merge tables for Calories per Serving for each method
+
+#wide format
+CalPerServ.wide <- merge(Wansink.long, subset.2, by=c("RecipeName","Year"))
+colnames(CalPerServ.wide)[3] <- "CaloriesperServing.Wan"  #rename a column
+#add a column for color
+CalPerServ.wide$Color <- "blue"
+CalPerServ.wide$Color[CalPerServ.wide$Year==2006] <- "orange"
+CalPerServ.wide[1:5]
+```
+
+```{r, results='hide'}
+# Reshape to long format
+
+#long format
+CalPerServ.long <- reshape(CalPerServ.wide, varying=3:5, direction="long", 
+                           v.names = "CaloriesPerServing", timevar="Method", 
+                           times=c("Wan","449","Atwater"), sep=".")
+#remove id column
+CalPerServ.long <- CalPerServ.long[,-c(6)]  
+length(CalPerServ.long[,1])
+```
+
+### Comparison with Wansink Data
+
+Using boxplots, I compared the distribution of these six recipes for the 4-4-9, Atwater, and Wansink methods. This plot shows that the Wansink data matches the 4-4-9 method closer than the Atwater method. This can be a source of bias since the 4-4-9 method scores recipes with higher calorie content, namely for the year 2006. All three methods score recipes from 2006 higher than 1936. This could be due to the fact that there are only six recipes in this dataset. However, our scatterplot which has 122 recipes in the dataset shows something similar. Nevertheless, a more thorough analysis can be performed by incroporating the missing Atwater values.
+
+```{r}
+# Compare methods using boxplots
+
+ggplot(CalPerServ.long, aes(x=Method, y=CaloriesPerServing, fill=as.character(Year))) +
+  geom_boxplot() + 
+  labs(title="Method Comparison", x="", y="Calories per Serving") +
+  scale_fill_manual(values=c("blue","orange"), name = "Year") +
+  theme_minimal() +
+  ylim(0, 500) +
+  stat_summary(fun.y=mean, geom="point", shape=18, size=3,  #adds mean point
+               colour="#e50bd6", position=position_dodge(width=0.75))
+```
+
+## References
+
+$^1$ ESHA Research, Nutrition: General Database. 4-4-9. *Do you use 4-4-9 (449 or 944) to calculate Calories from the grams of carbohydrate, protein and fat?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/202443626-4-4-9-Do-you-use-4-4-9-to-calculate-Calories-from-the-grams-of-carbohydrate-protein-and-fat-  
+  
+$^2$ ESHA Research, Nutrition: General Database. *Why do I get a different amount of Calories when I use the 4-4-9 calculation?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/203442937-Why-do-I-get-a-different-amount-of-Calories-when-I-use-the-4-4-9-calculation-  
+  
+$^3$ Oransky, Ivan. "The Joy of Cooking, Vindicated: Journal Retracts Two More Brian Wansink Papers." *Retraction Watch*, 6 Dec. 2018, retractionwatch.com/2018/12/05/the-joy-of-cooking-vindicated-journal-retracts-two-more-brian-wansink-papers/.  
+  
+$^4$ Wansink, Brian, and Collin R. Payne. "The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes." *Annals of Internal Medicine*, vol. 150, no. 4, 17 Feb. 2009, p. 291., doi:10.7326/l18-0647.  
+  
+
+
+
+
+
+
+
+
+
+
