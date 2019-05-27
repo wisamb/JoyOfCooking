@@ -986,7 +986,7 @@ CalPerServ.wide[1:5]
 #long format
 CalPerServ.long <- reshape(CalPerServ.wide, varying=3:5, direction="long", 
                            v.names = "CaloriesPerServing", timevar="Method", 
-                           times=c("Wan","449","Atwater"), sep=".")
+                           times=c("Wansink","4-4-9","Atwater"), sep=".")
 #remove id column
 CalPerServ.long <- CalPerServ.long[,-c(6)]  
 length(CalPerServ.long[,1])
