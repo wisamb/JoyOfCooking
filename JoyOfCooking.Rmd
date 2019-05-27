@@ -59,7 +59,7 @@ Recipes from each student were exported as a tab delimited file with columns *Am
 
 The first challenge in this dataset is that each student had different naming conventions. Examples of differences encountered are different naming conventions for the required columns (ie, *Unit* rather than *Measure*), not having the minimum columns of *Amount*, *Measure*, and *Ingredient*, having additional columns besides *Amount*, *Measure*, and *Ingredient*, and some files were duplicates. 
 
-A *for-loop* is used to read in the data from all the files. Using the %in% operator, I was able to convert any nonconforming columns to specification. The recipe name and year are parsed from the file name per naming convention. Files that did not have the minimum three columns needed to be dropped. Finally, the recipe name and year are parsed from each file name per naming convention.
+A *for-loop* is used to read in the data from all the files. Using the %in% operator, I was able to convert any nonconforming columns to specification. The recipe name and year are parsed from the file name per naming convention. Files that did not have the minimum three columns needed to be dropped. 
 
 ```{r}
 #set file paths
@@ -317,7 +317,7 @@ for (i in 1:length(merged.recipes$NDB_No)) {
 #j
 ```
 
-There are three results in five occurrences in the Ingredients column that do not have equivalents in the USDA database table. These ingredients are removed but not the recipe.
+There are three results in five occurrences in the *Ingredients* column that do not have equivalents in the USDA database table. These ingredients are removed but not the recipe.
 
 ```{r}
 merged.recipes.2 <- merged.recipes[!(is.na(merged.recipes$NDB_No)),]
@@ -566,7 +566,8 @@ if(!file.exists("nutval.Rda")) {
 ```
 
 ```{r, results='hide'}
-# Calculate carbohydrate, protein, fat, and total calories per recipe and add to `merged_recipes` table
+# Calculate carbohydrate, protein, fat, and total calories per recipe 
+# Add to `merged_recipes` table
 
 CHO <- 4
 PRO <- 4
@@ -605,10 +606,13 @@ length(ingredients.449[,1])
 
 #aggregate data
 recipes.449 <- aggregate(. ~Recipe+Year, data=ingredients.449, FUN=sum)
+
 #interested in only 3 columns
 recipes.449 <- recipes.449[,c("Recipe","Year","cal.total")] 
+
 #sort by Recipe name
 recipes.449 <- recipes.449[order(recipes.449$Recipe),]
+
 length(recipes.449[,1])
 ```
 
