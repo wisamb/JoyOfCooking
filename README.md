@@ -38,39 +38,54 @@ A note on missing values: Not all Measure entries matched the USDA database and 
 I start by looking at the summary statistics for all four conditions by year.
 
 #4-4-9 ingredient table 1936
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 0.00 49.16 186.20 271.46 350.57 1738.30
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##0.00 49.16 186.20 271.46 350.57 1738.30
 
 #Atwater ingredient table 1936
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 1.05 70.69 199.48 282.60 374.06 1782.38
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##1.05 70.69 199.48 282.60 374.06 1782.38
 
 #4-4-9 recipe table 1936
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 221.0 836.3 1189.1 1375.1 1821.0 3541.5
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##221.0 836.3 1189.1 1375.1 1821.0 3541.5
 
 #Atwater recipe table 1936
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 159.2 565.3 1034.6 1167.5 1595.3 3055.9
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##159.2 565.3 1034.6 1167.5 1595.3 3055.9
 
 #4-4-9 ingredient table 2006
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 0.00 55.51 208.35 327.00 416.70 3681.13
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##0.00 55.51 208.35 327.00 416.70 3681.13
 
 #Atwater ingredient table 2006
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 1.05 53.60 203.58 306.75 407.15 3879.72
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##1.05 53.60 203.58 306.75 407.15 3879.72
 
 #4-4-9 recipe table 2006
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 211.6 958.2 1433.8 1828.0 2504.5 5508.0
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##211.6 958.2 1433.8 1828.0 2504.5 5508.0
 
 #Atwater recipe table 2006
-## Min. 1st Qu. Median Mean 3rd Qu. Max.
-## 186.5 659.5 1171.6 1433.2 2166.6 4654.7
+##Min. 1st Qu. Median Mean 3rd Qu. Max.
+##186.5 659.5 1171.6 1433.2 2166.6 4654.7
 
 <b>Findings:</b> Mean and quantile values between the ingredient tables (for both years) are fairly close to one another (5-10%
 difference). Mean and quantile values between the recipe tables differ (for both years) 15-30% with 4-4-9 values being consistently higher.
 
 A scatterplot confirms this second finding and shows that the 4-4-9 method scores many recipes with higher calorie content than the Atwater method. Interestingly, a majority of the recipes that display the increase are from 2006.
 
+![scatterplot](/scatterplot.png)
+
+<b>Comparison with Wansink Data</b>
+
+![boxplot](/boxplot.png)
+
+<b>References</b>
+
+$^1$ ESHA Research, Nutrition: General Database. 4-4-9. *Do you use 4-4-9 (449 or 944) to calculate Calories from the grams of carbohydrate, protein and fat?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/202443626-4-4-9-Do-you-use-4-4-9-to-calculate-Calories-from-the-grams-of-carbohydrate-protein-and-fat-  
+  
+$^2$ ESHA Research, Nutrition: General Database. *Why do I get a different amount of Calories when I use the 4-4-9 calculation?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/203442937-Why-do-I-get-a-different-amount-of-Calories-when-I-use-the-4-4-9-calculation-  
+  
+$^3$ Oransky, Ivan. "The Joy of Cooking, Vindicated: Journal Retracts Two More Brian Wansink Papers." *Retraction Watch*, 6 Dec. 2018, retractionwatch.com/2018/12/05/the-joy-of-cooking-vindicated-journal-retracts-two-more-brian-wansink-papers/.  
+  
+$^4$ Wansink, Brian, and Collin R. Payne. "The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes." *Annals of Internal Medicine*, vol. 150, no. 4, 17 Feb. 2009, p. 291., doi:10.7326/l18-0647. 
