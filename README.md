@@ -4,7 +4,7 @@
 
 This was school project that consisted of two components. For the first part, each student was to create a single data table from individual recipe tables that come from the book <i>Joy of Cooking</i>. The individual recipe tables were created by other students in the class. Not all files followed specifications (ie, naming convention) and so the challenge was to work with the data while dropping as few recipes and ingredients as possible.
 
-The second part of the project consisted of statistical analysis. I had chosen to compare two methods of calculating calories and  to determine if any bias exists in either method. Method 1 calculates calories using the 4-4-9 method which uses a factor of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)2. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
+The second part of the project consisted of statistical analysis. I had chosen to compare two methods of calculating calories and  to determine if any bias exists in either method. Method 1 calculates calories using the 4-4-9 method which uses a factor of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)<sup>2</sup>. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
 
 <b>Programming Languages/Software:</b> R, RStudio <br>
 
@@ -19,11 +19,11 @@ Statistical Analysis <br>
 
 The book <i>Joy of Cooking</i> is one of the most popular books in the United States. It has provided recipes for many American-favorite dishes since 1936. Each edition, eight in total, has seen recipes come and go, yet some recipes appear in each of the eight editions with minor changes, if any at all.
 
-However, controversy brewed when in 2009, Brian Wansink of Cornell University published “The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes”. In this publication, the authors conclude that “calorie density and serving sizes in recipes from The Joy of Cooking have increased since 1936”. In 2018, this paper was retracted when an investigation found that academic misconduct had taken place.
+However, controversy brewed when in 2009, Brian Wansink of Cornell University published “The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes”. In this publication, the authors conclude that “calorie density and serving sizes in recipes from The Joy of Cooking have increased since 1936”. In 2018, this paper was retracted when an investigation found that academic misconduct had taken place.<sup>4</sup>
 
 <b>Part I: Data Preprocessing and Retrieval</b>
 
-Each student was to create tab delimited file with columns Amount, Measure, and Ingredient. Ingredient names were to match values from the USDA database (found on the USDA National Agricultural Library website - https://data.nal.usda.gov/search/type/dataset) and an NDB_No from the USDA database was added to identify each ingredient. The recipe name and year was to be parsed from the file name. A <i>for-loop</i> was used to import the data from all the tab delimited files. 
+Each student was to create tab delimited file with columns Amount, Measure, and Ingredient. Ingredient names were to match values from the USDA database (found on the <a href="https://data.nal.usda.gov/search/type/dataset">USDA National Agricultural Library website</a>) and an NDB_No from the USDA database was added to identify each ingredient. The recipe name and year was to be parsed from the file name. A <i>for-loop</i> was used to import the data from all the tab delimited files. 
 
 Immediately, I noticed there were files that did not follow naming conventions, had different naming conventions for the required columns (ie, Unit rather than Measure), did not have the minimum columns of Amount, Measure, and Ingredient, had additional columns besides Amount, Measure, and Ingredient, did not include the NDB_No column, and some files were duplicates. As often as I could I leveraged the power and efficiency of R's vectorization ability. For example using the %in% operator, I was able to convert any nonconforming columns to specification. In addition, I retrieved NDB_No values from the USDA database using a custom function that matches the ingredient to that in the USDA database. Where matching NDB_No values were not found, I used another custom function to tokenize the Ingredient column and searched the USDA database for the closest match. There were three results in five occurrences that do not have equivalents in the USDA database table. These ingredients are dropped but not the recipe. A total of 1245 ingredients from 188 recipes were retrieved.
 
@@ -74,7 +74,7 @@ difference). Mean and quantile values between the recipe tables differ (for both
 
 A scatterplot confirms this second finding and shows that the 4-4-9 method scores many recipes with higher calorie content than the Atwater method. Interestingly, a majority of the recipes that display the increase are from 2006.
 
-<img src="boxplot.png" alt="boxplot" width="70%"/>
+<img src="scatterplot.png" alt="scatterplot" width="70%"/>
 
 <b>Comparison with Wansink Data</b>
 
@@ -86,10 +86,10 @@ Using boxplots, I compared the distribution of the recipes for the 4-4-9, Atwate
 
 <b>References</b>
 
-1. ESHA Research, Nutrition: General Database. 4-4-9. *Do you use 4-4-9 (449 or 944) to calculate Calories from the grams of carbohydrate, protein and fat?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/202443626-4-4-9-Do-you-use-4-4-9-to-calculate-Calories-from-the-grams-of-carbohydrate-protein-and-fat-  
+<sup>1</sup> ESHA Research, Nutrition: General Database. 4-4-9. *Do you use 4-4-9 (449 or 944) to calculate Calories from the grams of carbohydrate, protein and fat?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/202443626-4-4-9-Do-you-use-4-4-9-to-calculate-Calories-from-the-grams-of-carbohydrate-protein-and-fat-  
   
-2. ESHA Research, Nutrition: General Database. *Why do I get a different amount of Calories when I use the 4-4-9 calculation?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/203442937-Why-do-I-get-a-different-amount-of-Calories-when-I-use-the-4-4-9-calculation-  
+<sup>2</sup> ESHA Research, Nutrition: General Database. *Why do I get a different amount of Calories when I use the 4-4-9 calculation?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/203442937-Why-do-I-get-a-different-amount-of-Calories-when-I-use-the-4-4-9-calculation-  
   
-3. Oransky, Ivan. "The Joy of Cooking, Vindicated: Journal Retracts Two More Brian Wansink Papers." *Retraction Watch*, 6 Dec. 2018, retractionwatch.com/2018/12/05/the-joy-of-cooking-vindicated-journal-retracts-two-more-brian-wansink-papers/.  
+<sup>3</sup> Oransky, Ivan. "The Joy of Cooking, Vindicated: Journal Retracts Two More Brian Wansink Papers." *Retraction Watch*, 6 Dec. 2018, retractionwatch.com/2018/12/05/the-joy-of-cooking-vindicated-journal-retracts-two-more-brian-wansink-papers/.  
   
-4. Wansink, Brian, and Collin R. Payne. "The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes." *Annals of Internal Medicine*, vol. 150, no. 4, 17 Feb. 2009, p. 291., doi:10.7326/l18-0647. 
+<sup>4</sup> Wansink, Brian, and Collin R. Payne. "The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes." *Annals of Internal Medicine*, vol. 150, no. 4, 17 Feb. 2009, p. 291., doi:10.7326/l18-0647. 
