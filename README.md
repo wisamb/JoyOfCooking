@@ -10,9 +10,14 @@ This was school project that was composed of two components. For the first part,
 
 The second part compares methods of calculating calories and includes a subset of the Wansink data to determine if any bias exist. Method 1 calculates calories using the 4-4-9 method which used factors of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)2. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
 
-<b>Programming Languages/Software:</b> R, RStudio <br>
-<b>Skills Used:</b> Text Processing and Parsing, Data Retrieval, Data Wrangling, Data Aggregation <br>
 <b>A write-up on this work can be found here:</b> https://wisamb.blogspot.com/ <br>
+<b>Programming Languages/Software:</b> R, RStudio <br>
+
+<b>Skills Used:</b> <br>
+Text Processing and Parsing <br>
+Data Retrieval <br>
+Data Wrangling <br>
+Data Aggregation <br>
 
 <b>Files included:</b> <br>
 Tab delimited files of each individual recipe <br>
