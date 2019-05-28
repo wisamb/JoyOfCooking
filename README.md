@@ -1,4 +1,4 @@
-# JoyOfCooking
+# Joy of Cooking
 
 <b>Problem Introduction</b>
 
