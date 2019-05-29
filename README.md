@@ -75,7 +75,7 @@ difference). Mean and quantile values between the recipe tables differ (for both
 
 A scatterplot confirms this second finding and shows that the 4-4-9 method scores many recipes with higher calorie content than the Atwater method. Interestingly, a majority of the recipes that display the increase are from 2006.
 
-<img src="/images/scatterplot.png" alt="scatterplot" width="70%"/>
+<img src="/images/scatterplot.png" alt="scatterplot" class="center" width="70%"/>
 
 ### Comparison with Wansink Data
 
@@ -83,7 +83,7 @@ I subset the Wansink data to determine if the Wansink Data uses the 4-4-9 method
 
 Using boxplots, I compare the distribution of the recipes for the 4-4-9, Atwater, and Wansink methods. This plot shows that the Wansink data matches the 4-4-9 method closer than the Atwater method. This can be a source of bias since the 4-4-9 method scores recipes with higher calorie content, namely for the year 2006. 
 
-<img src="/images/boxplot.png" alt="boxplot" width="70%"/>
+<img src="/images/boxplot.png" alt="boxplot" class="center" width="70%"/>
 
 ## References
 
