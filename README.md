@@ -70,6 +70,99 @@ I started by looking at the summary statistics for all four conditions by year.
 ##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
 ##186.5 659.5 1171.6 1433.2 2166.6 4654.7 <br>
 
+<table>
+  <tr>
+    <th>Method<br></th>
+    <th>Year</th>
+    <th>Minimum</th>
+    <th>1st Quartile</th>
+    <th>Median</th>
+    <th>Mean</th>
+    <th>3rd Quartile</th>
+    <th>Maximum</th>
+  </tr>
+  <tr>
+    <td>4-4-9 ingredient table</td>
+    <td>1936</td>
+    <td>0.00</td>
+    <td>49.16<br></td>
+    <td>186.20</td>
+    <td>271.46</td>
+    <td>350.57<br></td>
+    <td>1738.30</td>
+  </tr>
+  <tr>
+    <td>Atwater ingredient table</td>
+    <td>1936</td>
+    <td>1.05</td>
+    <td>70.69</td>
+    <td>199.48</td>
+    <td>282.60</td>
+    <td>374.06</td>
+    <td>1782.38</td>
+  </tr>
+  <tr>
+    <td>4-4-9 recipe table</td>
+    <td>1936</td>
+    <td>221.0</td>
+    <td>836.3</td>
+    <td>1189.1</td>
+    <td>1375.1</td>
+    <td>1821.0</td>
+    <td>3541.5</td>
+  </tr>
+  <tr>
+    <td>Atwater recipe table</td>
+    <td>1936</td>
+    <td>159.2</td>
+    <td>565.3</td>
+    <td>1034.6</td>
+    <td>1167.5</td>
+    <td>1595.3</td>
+    <td>3055.9</td>
+  </tr>
+  <tr>
+    <td>4-4-9 ingredient table</td>
+    <td>2006</td>
+    <td>0.00</td>
+    <td>55.51</td>
+    <td>208.35</td>
+    <td>327.00</td>
+    <td>416.70</td>
+    <td>3681.13</td>
+  </tr>
+  <tr>
+    <td>Atwater ingredient table</td>
+    <td>2006</td>
+    <td>1.05</td>
+    <td>53.60</td>
+    <td>203.58</td>
+    <td>306.75</td>
+    <td>407.15</td>
+    <td>3879.72</td>
+  </tr>
+  <tr>
+    <td>4-4-9 recipe table</td>
+    <td>2006</td>
+    <td>211.6</td>
+    <td>958.2</td>
+    <td>1433.8</td>
+    <td>1828.0</td>
+    <td>2504.5</td>
+    <td>5508.0<br></td>
+  </tr>
+  <tr>
+    <td>Atwater recipe table</td>
+    <td>2006</td>
+    <td>186.5</td>
+    <td>659.5</td>
+    <td>1171.6<br></td>
+    <td>1433.2</td>
+    <td>2166.6</td>
+    <td>4654.7</td>
+  </tr>
+</table>
+
 <b>Findings:</b> Mean and quantile values between the ingredient tables (for both years) are fairly close to one another (5-10%
 difference). Mean and quantile values between the recipe tables differ (for both years) 15-30% with 4-4-9 values being consistently higher.
 
