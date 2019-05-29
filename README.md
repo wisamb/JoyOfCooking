@@ -38,38 +38,6 @@ I then searched the USDA table for Measure entries to return the matching Gm_Wgt
 
 I started by looking at the summary statistics for all four conditions by year.
 
-<b>#4-4-9 ingredient table 1936</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##0.00 49.16 186.20 271.46 350.57 1738.30 <br>
-
-<b>#Atwater ingredient table 1936</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##1.05 70.69 199.48 282.60 374.06 1782.38 <br>
-
-<b>#4-4-9 recipe table 1936</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##221.0 836.3 1189.1 1375.1 1821.0 3541.5 <br>
-
-<b>#Atwater recipe table 1936</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##159.2 565.3 1034.6 1167.5 1595.3 3055.9 <br>
-
-<b>#4-4-9 ingredient table 2006</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##0.00 55.51 208.35 327.00 416.70 3681.13 <br>
-
-<b>#Atwater ingredient table 2006</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##1.05 53.60 203.58 306.75 407.15 3879.72 <br>
-
-<b>#4-4-9 recipe table 2006</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##211.6 958.2 1433.8 1828.0 2504.5 5508.0 <br>
-
-<b>#Atwater recipe table 2006</b> <br>
-##Min. 1st Qu. Median Mean 3rd Qu. Max. <br>
-##186.5 659.5 1171.6 1433.2 2166.6 4654.7 <br>
-
 <table>
   <tr>
     <th>Method<br></th>
