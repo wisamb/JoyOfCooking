@@ -1,6 +1,6 @@
 # Joy of Cooking
 
-<b>Problem Introduction</b>
+### Problem Introduction
 
 This was school project that consisted of two components. For the first part, each student was to create a single data table, merging individual recipe tables that come from the book <i>Joy of Cooking</i>. The individual recipe tables were created by other students in the class. Not all files followed specifications (ie, naming convention) and so the challenge was to work with the data while dropping as few recipes and ingredients as possible.
 
@@ -16,13 +16,13 @@ Data Wrangling <br>
 Data Aggregation <br>
 Statistical Analysis <br>
 
-<b>Introduction</b>
+## Introduction
 
 The book <i>Joy of Cooking</i> is one of the most popular books in the United States. It has provided recipes for many American-favorite dishes since 1936. Each edition, eight in total, has seen recipes come and go, yet some recipes appear in each of the eight editions with minor changes, if any at all.
 
 However, controversy brewed when in 2009, Brian Wansink of Cornell University published “The Joy of Cooking Too Much: 70 Years of Calorie Increases in Classic Recipes”. In this publication, the authors conclude that “calorie density and serving sizes in recipes from The Joy of Cooking have increased since 1936”. In 2018, this paper was retracted when an investigation found that academic misconduct had taken place.<sup>4</sup>
 
-<b>Part I: Data Preprocessing and Retrieval</b>
+## Part I: Data Preprocessing and Retrieval
 
 Each student was to create tab delimited file with columns Amount, Measure, and Ingredient. Ingredient names were to match values from the USDA database (found on the <a href="https://data.nal.usda.gov/search/type/dataset" target="_blank">USDA National Agricultural Library website</a>), and an NDB_No from the USDA database was added to identify each ingredient. The recipe name and year was to be parsed from the file name. 
 
@@ -34,7 +34,7 @@ I then searched the USDA table for Measure entries to return the matching Gm_Wgt
 
 <b>A note on missing values:</b> Not all Measure entries matched the USDA database and there were 349 NA values. Although this reduced the data by 28%, I dropped these entries due to time constraints. Furthemore, many of the Atwater factors were not provided in the USDA databasea and NA values were dropped to continue with analysis. A total of 687 ingredients and 122 recipes remained.
 
-<b>Part II: Statistical Analysis</b>
+## Part II: Statistical Analysis
 
 I started by looking at the summary statistics for all four conditions by year.
 
@@ -77,7 +77,7 @@ A scatterplot confirms this second finding and shows that the 4-4-9 method score
 
 <img src="/images/scatterplot.png" alt="scatterplot" width="70%"/>
 
-<b>Comparison with Wansink Data</b>
+### Comparison with Wansink Data
 
 I subset the Wansink data to determine if the Wansink Data uses the 4-4-9 method or the Atwater method. The data contains 17 recipes although Wansink evaluated 18 recipes. Nevertheless, 18 recipes is a small sample from the 142 total recipes from Joy of Cooking. This small sample size introduces a bias and is a prevalent criticism of Wansink’s work.
 
@@ -85,7 +85,7 @@ Using boxplots, I compare the distribution of the recipes for the 4-4-9, Atwater
 
 <img src="/images/boxplot.png" alt="boxplot" width="70%"/>
 
-<b>References</b>
+## References
 
 <sup>1</sup> ESHA Research, Nutrition: General Database. 4-4-9. *Do you use 4-4-9 (449 or 944) to calculate Calories from the grams of carbohydrate, protein and fat?* Retrieved from https://esha.zendesk.com/hc/en-us/articles/202443626-4-4-9-Do-you-use-4-4-9-to-calculate-Calories-from-the-grams-of-carbohydrate-protein-and-fat-  
   
