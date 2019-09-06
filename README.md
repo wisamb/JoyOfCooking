@@ -6,16 +6,6 @@ This was school project that consisted of two components. For the first part, ea
 
 The second part of the project consisted of statistical analysis. I had chosen to compare two methods of calculating calories and  to determine if any bias exists in either method. Method 1 calculates calories using the 4-4-9 method which uses a factor of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)<sup>2</sup>. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
 
-<b>Programming Languages/Software:</b> R, RStudio <br>
-
-<b>Skills Used:</b> <br>
-Text Processing <br>
-Text Parsing <br>
-Data Retrieval <br>
-Data Wrangling <br>
-Data Aggregation <br>
-Statistical Analysis <br>
-
 ## Introduction
 
 The book <i>Joy of Cooking</i> is one of the most popular books in the United States. It has provided recipes for many American-favorite dishes since 1936. Each edition, eight in total, has seen recipes come and go, yet some recipes appear in each of the eight editions with minor changes, if any at all.
