@@ -4,7 +4,7 @@
 
 This was school project that consisted of two components. For the first part, each student was to create a single data table, merging individual recipe tables that come from the book <i>Joy of Cooking</i>. The individual recipe tables were created by other students in the class. Not all files followed specifications (ie, naming convention) and so the challenge was to work with the data while dropping as few recipes and ingredients as possible.
 
-The second part of the project consisted of statistical analysis. I had chosen to compare two methods of calculating calories and  to determine if any bias exists in either method. Method 1 calculates calories using the 4-4-9 method which uses a factor of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)<sup>2</sup>. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
+The second part of the project consisted of statistical analysis. I had chosen to compare two methods of calculating calories and  to determine if any bias exists in Wansink's analysis of the data. Method 1 calculates calories using the 4-4-9 method which uses a factor of 4 for calories from carbohydrates (CHO), 4 for calories from proteins (PRO), and 9 for calories from fat (FAT)<sup>2</sup>. Method 2 uses the Atwater factors from the USDA database, which are known to be more accurate. 
 
 ## Introduction
 
